@@ -12,3 +12,60 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                Int      @id @default(autoincrement())
+  username          String   @unique
+  email             String   @unique
+  profilePictureUrl String?
+  password          String
+  createdAt         DateTime @default(now())
+
+  Posts    Post[]
+  Comments Comment[]
+  Likes    Like[]
+  Friends  Friendship[] @relation(name: "friends_users")
+  FriendOf Friendship[] @relation(name: "friend_of_users")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+  text      String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  Like    Like[]
+  Comment Comment[]
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  ownerId   Int
+  owner     User     @relation(fields: [ownerId], references: [id])
+  text      String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+}
+
+model Friendship {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(name: "friends_users", fields: [userId], references: [id])
+  friendId  Int
+  friend    User     @relation(name: "friend_of_users", fields: [friendId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, friendId])
+}

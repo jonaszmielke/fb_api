@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 app.get("/test", (req, res) =>{
-    console.log(`GET request on /test from ${req.ip}`)
+    console.log(`GET request on /test from ${req.ipv4}`)
     res.status(200).json({message: 'hello test!'});
 });
 
