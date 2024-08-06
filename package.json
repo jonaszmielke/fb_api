@@ -9,8 +9,10 @@
   "author": "Jonasz",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.17.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "prisma": "^5.17.0"
+    "prisma": "^5.17.0",
+    "prisma-client": "^0.0.0"
   }
 }
