@@ -15,7 +15,8 @@ datasource db {
 
 model User {
   id                Int      @id @default(autoincrement())
-  username          String   @unique
+  name              String
+  surname           String
   email             String   @unique
   profilePictureUrl String?
   password          String
@@ -36,7 +37,7 @@ model Post {
   imageUrl  String?
   createdAt DateTime @default(now())
 
-  likes   Like[]
+  likes    Like[]
   comments Comment[]
 }
 
