@@ -2,36 +2,97 @@ import prisma from "../db";
 import {Router} from 'express';
 const user_router = Router();
 
+async function checkIfUserExists(req, res) {
 
-user_router.get("/posts:userid", async (req, res) => {
+    let userid = req.params.userid.substring(1);
+    if(isNaN(userid) || userid === undefined){
 
-    const userid = req.params.userid;
+        res.status(400)
+        res.json({ error: 'Invalid userid parameter'});
+        return;
+    }
+    userid = parseInt(userid);
+    const user = await prisma.user.findUnique({
+        where: {id: userid}
+    });
 
-    if(await prisma.user.findUnique({where: {id: userid}}) == null){
+    if(!user){
+        res.status(404)
+        res.json({ error: `User ${userid} does not exist`});
+        return;
+    }
+    return user;
+}
 
-        res.status(404);
-        res.json({error: `User of id ${userid} does not exist`});
-        
-    } else {
 
-        try{
+user_router.get("/:userid", async (req, res) =>{
 
-            const posts = await prisma.post.findMany({
+    const user = await checkIfUserExists(req, res);
+    if (user) {
+        res.status(200);
+        res.json({
+            "id": user.id,
+            "name": user.name,
+            "surname": user.surname,
+            "profile_picture": user.profilePictureUrl,
+            "joined": user.createdAt
+        });
+    }
     
-                where: {ownerId: userid},
-                orderBy: {createdAt: 'desc'},
-                take: 5
-            });
+});
 
-            res.status(200);
-            res.json(posts);
 
-        } catch (error) {
+user_router.get("/posts/:userid", async (req, res) => {
+
+    const user = await checkIfUserExists(req, res);
+    if (user){
+
+        const posts = await prisma.post.findMany({
+
+            where: {ownerId: user.id},
+            orderBy: {createdAt: 'desc'},
+            take: 5
+        });
+
+        res.status(200);
+        res.json(posts);
+    }   
+});
+
+
+user_router.get("/friends/:userid", async (req, res) => {
+
+    const user = await checkIfUserExists(req, res);
+    if (user) {
+
+        const friends = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { friends: { select: {
+                id: true, //id of a friendship
+                friend: { select: {
+                    id: true,
+                    name: true,
+                    surname: true,
+                    profilePictureUrl: true
+            }}}}}
+        });
+        const output = [];
+        friends.friends.forEach(element => {
+            
+            const out = {
+                "friendshipId": element.id,
+                "friend": {
+                    "id": element.friend.id,
+                    "name": element.friend.name,
+                    "surname": element.friend.surname,
+                    "profilePictureUrl": element.friend.profilePictureUrl
+                }
+            };
+            output.push(out);
+        });
     
-            console.log(`Error fetching 5 userid = ${userid} posts for fyp\n${error}`);
-            res.status(500);
-            res.json({error: "Internal server error"});
-        }
+        res.status(200);
+        res.json(output);
     }
 });
 

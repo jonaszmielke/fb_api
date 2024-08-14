@@ -3,27 +3,33 @@ import {Router} from 'express';
 const post_router = Router();
 
 
-
 post_router.get("/:postid", async (req, res) => {
 
-    console.log("dupa");
     const postid = parseInt(req.params.postid.substring(1));
     const post = await prisma.post.findUnique({
-
-        where: {id: postid}
+        where: {id: postid},
+        select: {
+            id: true,
+            text: true,
+            imageUrl: true,
+            createdAt: true,
+            owner: {select:{
+                id: true,
+                name: true,
+                surname: true,
+                profilePictureUrl: true
+            }}
+        },
     });
 
-    if(post == null){
-
+    if(!post){
         res.status(404);
         res.json({error: `Post of id ${postid} does not exist`});
-
-    } else {
-
-        res.status(200);
-        //res.json(post);
-        res.json({message: "dupa"})
+        return;
     }
+
+    res.status(200);
+    res.json(post);
 });
 
 
@@ -55,7 +61,6 @@ post_router.put("/:postid", async (req, res) => {
     const new_text = req.body.text;
 
     if(!new_text){
-
         res.status(400);
         res.send("Incorrect post data")
         return;
