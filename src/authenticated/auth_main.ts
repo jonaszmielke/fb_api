@@ -1,10 +1,12 @@
 import prisma from "../db";
 import {Router} from 'express';
 import post_router from "./post";
+import like_router from "./like";
 import user_router from "./user";
 const auth_router = Router();
 
 
+auth_router.use("/post/like", like_router)
 auth_router.use("/post", post_router);
 auth_router.use("/user", user_router);
 

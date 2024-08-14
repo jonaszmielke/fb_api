@@ -48,6 +48,8 @@ model Like {
   ownerId   Int
   owner     User     @relation(fields: [ownerId], references: [id])
   createdAt DateTime @default(now())
+
+  @@unique([postId, ownerId])
 }
 
 model Comment {

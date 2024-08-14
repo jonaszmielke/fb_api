@@ -1,5 +1,6 @@
 import prisma from "../db";
 import {Router} from 'express';
+import { findPost } from "./like";
 const post_router = Router();
 
 
@@ -130,6 +131,37 @@ post_router.delete("/:postid", async (req, res) => {
         "message": `Successfully deleted a post`,
         "post": post
     });
+});
+
+
+post_router.get("/isliked/:postid", async (req, res) => {
+
+    const post = await findPost(req, res);
+    if(post){
+
+        const like = await prisma.like.findUnique({
+            where: { postId_ownerId: {
+                    postId: post.id,
+                    ownerId: req.user.id,
+                }}
+        });
+        if(like){
+            
+            res.status(200);
+            res.json({
+                "isLiked": true,
+                "postId": like.postId,
+                "likeId": like.id
+            });
+        } else {
+
+            res.status(200);
+            res.json({
+                "isLiked": false,
+                "postId": post.id,
+            });
+        }
+    }
 });
 
 
