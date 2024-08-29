@@ -1,7 +1,10 @@
 import prisma from "../db";
 import {Router} from 'express';
 import { findPost } from "./like";
+import CreateUpload from "../storage";
 const post_router = Router();
+
+const upload = CreateUpload('posts');
 
 
 post_router.get("/:postid", async (req, res) => {
@@ -33,11 +36,31 @@ post_router.get("/:postid", async (req, res) => {
     res.json(post);
 });
 
+post_router.post("/", upload.single('image'), async (req, res) => {
 
-post_router.post("/", async (req, res) => {
+    if(!req.body.text){
+        res.status(400);
+        res.send("Incorrect post data");
+        return;
+    }
 
-    if(req.body.text){
-        await prisma.post.create({
+    let post;
+
+    if(req.file){
+
+        post = await prisma.post.create({
+            data:{
+                owner:{
+                    connect:{id: req.user.id}
+                },
+                text: req.body.text,
+                imageUrl: req.file.filename
+            }
+        });
+
+    } else {
+
+        post = await prisma.post.create({
             data:{
                 owner:{
                     connect:{id: req.user.id}
@@ -45,14 +68,14 @@ post_router.post("/", async (req, res) => {
                 text: req.body.text,
             }
         });
-
-        res.status(200);
-        res.json({message: "Successfully uploaded a post"});
-    } else {
-
-        res.status(400);
-        res.send("Incorrect post data")
     }
+
+    res.status(200);
+    res.json({
+        message: "Successfully uploaded a post",
+        postid: post.id
+    });
+    
 });
 
 

@@ -15,7 +15,7 @@ app.use(express.urlencoded({extended: true}));
 app.use("/unauth", unauth_router)
 
 //router for authenticated user requests
-app.use("/auth", authenticate, auth_router);
+app.use("/api", authenticate, auth_router);
 
 
 app.listen(process.env.PORT, (error) =>{

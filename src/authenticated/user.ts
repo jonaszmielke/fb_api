@@ -1,6 +1,8 @@
 import prisma from "../db";
 import {Router} from 'express';
+import CreateUpload from "../storage";
 const user_router = Router();
+const upload = CreateUpload("profile_pictures");
 
 async function checkIfUserExists(req, res) {
 
@@ -94,6 +96,24 @@ user_router.get("/friends/:userid", async (req, res) => {
         res.status(200);
         res.json(output);
     }
+});
+
+
+user_router.post("/profile_picture", upload.single('image'), async (req, res) =>{
+
+    if(!req.file){
+        res.status(400);
+        res.send("Incorrect image");
+        return;
+    }
+
+    const user = await prisma.user.update({
+        where: {id: req.user.id},
+        data: {profilePictureUrl: req.file.filename}
+    });
+
+    res.status(200);
+    res.json({'message': 'Profile picture updated succesfuly'});
 });
 
 
