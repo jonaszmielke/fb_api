@@ -13,16 +13,16 @@ export async function findPost(req, res) {
         return;
     }
     postid = parseInt(postid);
-    const user = await prisma.user.findUnique({
+    const post = await prisma.post.findUnique({
         where: {id: postid}
     });
 
-    if(!user){
+    if(!post){
         res.status(404)
         res.json({ error: `Post ${postid} does not exist`});
         return;
     }
-    return user;
+    return post;
 }
 
 
