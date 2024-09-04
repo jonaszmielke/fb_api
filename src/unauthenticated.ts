@@ -27,15 +27,27 @@ function createJWT(user){
 
 
 
-unauth_router.get("/signin", async (req, res) => {
+unauth_router.post("/signin", async (req, res) => {
 
-    const user = await prisma.user.findUnique({
-        where: {
-            email: req.body.email
-        }
-    })
+    if(!req.body.email || !req.body.password){
+        res.status(400);
+        res.json({"error": "nope"});
+        return;
+    }
 
-    if(user.password == hashPassword(req.body.password)){
+    let user;
+    try{
+        user = await prisma.user.findUnique({
+            where: {
+                email: req.body.email
+            }
+        })
+
+    //If this happens, user provided non registered email
+    //Then the user is undefined and code below sends wrong credential error
+    } catch (error){}
+
+    if(user && user.password == hashPassword(req.body.password)){
         
         req.user = user;
         const token = createJWT(user); 
@@ -50,10 +62,9 @@ unauth_router.get("/signin", async (req, res) => {
     } else {
 
         res.status(401);
-        res.send("Wrong credentials");
-
+        res.json({"error": "Wrong credentials"});
     }
-})
+});
 
 unauth_router.post("/signup", async (req, res) =>{
 
@@ -76,6 +87,6 @@ unauth_router.post("/signup", async (req, res) =>{
         res.status(400);
         res.send("Incorrect user data")
     }
-})
+});
 
 export default unauth_router;

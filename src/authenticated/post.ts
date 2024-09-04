@@ -9,7 +9,7 @@ const upload = CreateUpload('posts');
 
 post_router.get("/:postid", async (req, res) => {
 
-    const postid = parseInt(req.params.postid.substring(1));
+    const postid = parseInt(req.params.postid);
     const post = await prisma.post.findUnique({
         where: {id: postid},
         select: {
@@ -79,12 +79,12 @@ post_router.post("/", upload.single('image'), async (req, res) => {
 });
 
 
-post_router.put("/:postid", async (req, res) => {
+post_router.put("/:postid", upload.single('image'), async (req, res) => {
 
-    const postid = parseInt(req.params.postid.substring(1));
+    const postid = parseInt(req.params.postid);
     const new_text = req.body.text;
 
-    if(!new_text){
+    if(!new_text && !req.file){
         res.status(400);
         res.send("Incorrect post data")
         return;
@@ -108,12 +108,23 @@ post_router.put("/:postid", async (req, res) => {
         return;
     }
 
-    await prisma.post.update({
-        where: {id: postid},
-        data: {
-            text: new_text
-        }
-    });
+    if(new_text){
+        await prisma.post.update({
+            where: {id: postid},
+            data: {
+                text: new_text
+            }
+        });
+    }
+
+    if(req.file){
+        await prisma.post.update({
+            where: {id: postid},
+            data: {
+                imageUrl: req.file.filename
+            }
+        });
+    }
 
     res.status(200);
     res.json({
@@ -126,7 +137,7 @@ post_router.put("/:postid", async (req, res) => {
 
 post_router.delete("/:postid", async (req, res) => {
 
-    const postid = parseInt(req.params.postid.substring(1));
+    const postid = parseInt(req.params.postid);
     const post = await prisma.post.findUnique({
         where: {id: postid}
     });
