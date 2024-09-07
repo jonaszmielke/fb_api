@@ -13,24 +13,65 @@ auth_router.use("/like", like_router)
 auth_router.use("/comment", comment_router)
 
 
-auth_router.get("/fyp_posts", async (req, res) => {
+auth_router.post("/fyp_posts", async (req, res) => {
 
-    try{
+    const idsToOmit: number[] = req.body.omit;
 
-        const posts = await prisma.post.findMany({
+    if(!idsToOmit || idsToOmit.length === 0){
 
-            orderBy: {createdAt: 'desc'},
-            take: 5
-        });
-
-        res.status(200);
-        res.json(posts);
+        try{
+            const posts = await prisma.post.findMany({
     
-    } catch (error) {
+                orderBy: {createdAt: 'desc'},
+                take: 5,
+                select: {
+                    id: true
+                }
+            });
+    
+            const ids = [];
+            posts.map( (post) => {
+                ids.push(post.id)
+            })
+            res.status(200);
+            res.json(ids);
+        
+        } catch (error) {
+    
+            console.log(`Error fetching 5 posts for fyp\n${error}`);
+            res.status(500);
+            res.json({error: "Internal server error"});
+        }
 
-        console.log(`Error fetching 5 posts for fyp\n${error}`);
-        res.status(500);
-        res.json({error: "Internal server error"});
+    } else {
+
+        try{
+            const posts = await prisma.post.findMany({
+    
+                where: {
+                    id: {
+                        notIn: idsToOmit
+                    }},
+                orderBy: {createdAt: 'desc'},
+                take: 5,
+                select: {
+                    id: true
+                }
+            });
+
+            const ids = [];
+            posts.map( (post) => {
+                ids.push(post.id)
+            })
+            res.status(200);
+            res.json(ids);
+
+        } catch (error) {
+
+            console.log(`Error fetching 5 posts for fyp\n${error}`);
+            res.status(500);
+            res.json({error: "Internal server error"});
+        }
     }
 })
 
