@@ -13,14 +13,16 @@ auth_router.use("/like", like_router)
 auth_router.use("/comment", comment_router)
 
 
-auth_router.post("/fyp_posts", async (req, res) => {
+auth_router.get("/fyp_posts", async (req, res) => {
 
-    const idsToOmit: number[] = req.body.omit;
+    const idsToOmit = JSON.parse(req.query.omit || '[]');
+    let error:string;
+    let posts;
 
     if(!idsToOmit || idsToOmit.length === 0){
-
         try{
-            const posts = await prisma.post.findMany({
+
+            posts = await prisma.post.findMany({
     
                 orderBy: {createdAt: 'desc'},
                 take: 5,
@@ -28,25 +30,15 @@ auth_router.post("/fyp_posts", async (req, res) => {
                     id: true
                 }
             });
-    
-            const ids = [];
-            posts.map( (post) => {
-                ids.push(post.id)
-            })
-            res.status(200);
-            res.json(ids);
-        
-        } catch (error) {
-    
-            console.log(`Error fetching 5 posts for fyp\n${error}`);
-            res.status(500);
-            res.json({error: "Internal server error"});
+
+        } catch (e){
+            error = `Error fetching 5 posts for fyp\n${e}`;
         }
 
     } else {
-
         try{
-            const posts = await prisma.post.findMany({
+
+            posts = await prisma.post.findMany({
     
                 where: {
                     id: {
@@ -59,20 +51,37 @@ auth_router.post("/fyp_posts", async (req, res) => {
                 }
             });
 
-            const ids = [];
-            posts.map( (post) => {
-                ids.push(post.id)
-            })
-            res.status(200);
-            res.json(ids);
-
-        } catch (error) {
-
-            console.log(`Error fetching 5 posts for fyp\n${error}`);
-            res.status(500);
-            res.json({error: "Internal server error"});
+        } catch (e) {
+            error = `Error fetching 5 posts for fyp\nOmit: ${idsToOmit}\n${e}`;
         }
     }
+    
+
+    if(error){
+        console.log(error);
+        res.status(500);
+        res.json({message: 'Internal server error'});
+        return;
+    }
+
+    const ids:number[] = [];
+    posts.map( (post) => {
+        ids.push(post.id)
+    })
+
+    if(!ids || ids.length === 0){
+
+        res.status(200);
+        res.json({allPostsDepleted: true});
+        return;
+    }
+
+    console.log(`Posts returned: ${posts.map( (p) => {return p.id})}\nPosts omitted: ${idsToOmit}\n`);
+    res.status(200);
+    res.json({
+        'postids': ids,
+        'allPostsDepleted': false
+    });
 })
 
 export default auth_router;

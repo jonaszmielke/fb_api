@@ -10,6 +10,13 @@ const upload = CreateUpload('posts');
 post_router.get("/:postid", async (req, res) => {
 
     const postid = parseInt(req.params.postid);
+
+    if(!postid){
+        res.status(400);
+        res.json({error: "Bad request, please provide desired post's id"});
+        return;
+    }
+
     const post = await prisma.post.findUnique({
         where: {id: postid},
         select: {

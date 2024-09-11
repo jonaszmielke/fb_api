@@ -22,9 +22,9 @@ const auth_cors = (cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use('/app_images', express.static('app_images'));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use('/app_images', express.static('app_images'));
 
 //router for unauthenticated user requests
 //like log in and account creation
