@@ -6,7 +6,7 @@ const upload = CreateUpload("profile_pictures");
 
 async function checkIfUserExists(req, res) {
 
-    let userid = req.params.userid.substring(1);
+    let userid = req.params.userid;
     if(isNaN(userid) || userid === undefined){
 
         res.status(400)
@@ -47,18 +47,71 @@ user_router.get("/:userid", async (req, res) =>{
 user_router.get("/posts/:userid", async (req, res) => {
 
     const user = await checkIfUserExists(req, res);
+
     if (user){
+        const idsToOmit = JSON.parse(req.query.omit || '[]');
+        let error:string;
+        let result;
+    
+        if(!idsToOmit || idsToOmit.length === 0){
+            try{
+    
+                result = await prisma.post.findMany({
+        
+                    orderBy: {createdAt: 'desc'},
+                    take: 5,
+                    select: {
+                        id: true
+                    }
+                });
+    
+            } catch (e){
+                error = `Error fetching 5 posts for fyp\n${e}`;
+            }
+        } else {
+            try{
+    
+                result = await prisma.post.findMany({
+        
+                    where: {
+                        id: {
+                            notIn: idsToOmit
+                        }},
+                    orderBy: {createdAt: 'desc'},
+                    take: 5,
+                    select: {
+                        id: true
+                    }
+                });
+    
+            } catch (e) {
+                error = `Error fetching 5 posts for fyp\nOmit: ${idsToOmit}\n${e}`;
+            }
+        }
+    
+        if(error){
+            console.log(error);
+            res.status(500);
+            res.json({message: 'Internal server error'});
+            return;
+        }
 
-        const posts = await prisma.post.findMany({
 
-            where: {ownerId: user.id},
-            orderBy: {createdAt: 'desc'},
-            take: 5
-        });
+        const postids:number[] = [];
+        for (const post of result){
+            postids.push(post.id);
+        }
 
+        if(!postids || postids.length === 0){
+            res.status(200);
+            res.json({allPostsDepleted: true});
+            return;
+        }
+
+        console.log(postids);
         res.status(200);
-        res.json(posts);
-    }   
+        res.json({'postids': postids});
+    }
 });
 
 
