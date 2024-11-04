@@ -136,12 +136,10 @@ user_router.get("/friends/:userid", async (req, res) => {
             
             const out = {
                 "friendshipId": element.id,
-                "friend": {
-                    "id": element.friend.id,
-                    "name": element.friend.name,
-                    "surname": element.friend.surname,
-                    "profilePictureUrl": element.friend.profilePictureUrl
-                }
+                "id": element.friend.id,
+                "name": element.friend.name,
+                "surname": element.friend.surname,
+                "profilePictureUrl": element.friend.profilePictureUrl
             };
             output.push(out);
         });
