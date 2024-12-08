@@ -47,6 +47,7 @@ user_router.get("/:userid", async (req, res) =>{
 user_router.get("/posts/:userid", async (req, res) => {
 
     const user = await checkIfUserExists(req, res);
+    const requestedUserId = parseInt(req.params.userid);
 
     if (user){
         const idsToOmit = JSON.parse(req.query.omit || '[]');
@@ -58,6 +59,9 @@ user_router.get("/posts/:userid", async (req, res) => {
     
                 result = await prisma.post.findMany({
         
+                    where: {
+                        ownerId: requestedUserId,
+                    },
                     orderBy: {createdAt: 'desc'},
                     take: 5,
                     select: {
@@ -74,6 +78,7 @@ user_router.get("/posts/:userid", async (req, res) => {
                 result = await prisma.post.findMany({
         
                     where: {
+                        ownerId: requestedUserId,
                         id: {
                             notIn: idsToOmit
                         }},
