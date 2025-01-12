@@ -1,5 +1,5 @@
 require('dotenv').config({path: '.env'});
-process.env['UV_THREADPOOL_SIZE'] = '32';
+//process.env['UV_THREADPOOL_SIZE'] = '32';
 
 import express from 'express';
 import unauth_router from './unauthenticated';

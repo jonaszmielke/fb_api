@@ -30,14 +30,37 @@ async function checkIfUserExists(req, res) {
 user_router.get("/:userid", async (req, res) =>{
 
     const user = await checkIfUserExists(req, res);
+    const includeMutualFriends = req.query.includeMutualFriends === 'true';
     if (user) {
+        
+        let mutualFriendsCount = null;
+
+        if (includeMutualFriends){
+            // Query for mutual friends count
+            mutualFriendsCount = await prisma.friendship.count({
+                where: {
+                    OR: [
+                        {
+                            userId: req.user.id,
+                            friendId: user.id,
+                        },
+                        {
+                            userId: user.id,
+                            friendId: req.user.id,
+                        },
+                    ],
+                },
+            });
+        }
+
         res.status(200);
         res.json({
             "id": user.id,
             "name": user.name,
             "surname": user.surname,
             "profile_picture": user.profilePictureUrl,
-            "joined": user.createdAt
+            "joined": user.createdAt,
+            ...(includeMutualFriends && { mutual_friends: mutualFriendsCount }), // Include only if requested
         });
     }
     
@@ -123,6 +146,7 @@ user_router.get("/posts/:userid", async (req, res) => {
 user_router.get("/friends/:userid", async (req, res) => {
 
     const user = await checkIfUserExists(req, res);
+    //console.log(`friend request, requesting userid: ${req.user.id}`)
     if (user) {
 
         const friends = await prisma.user.findUnique({
