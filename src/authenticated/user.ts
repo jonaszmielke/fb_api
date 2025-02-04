@@ -146,18 +146,22 @@ user_router.get("/posts/:userid", async (req, res) => {
 user_router.get("/friends/:userid", async (req, res) => {
 
     const user = await checkIfUserExists(req, res);
-    //console.log(`friend request, requesting userid: ${req.user.id}`)
     if (user) {
 
         const friends = await prisma.user.findUnique({
             where: { id: user.id },
-            select: { friends: { select: {
-                id: true, //id of a friendship
-                friend: { select: {
-                    id: true,
-                    name: true,
-                    surname: true,
-                    profilePictureUrl: true
+            select: { 
+                friends: { 
+                    take: 9, // Limit to 9 users
+                    select: {
+                        id: true, // ID of a friendship
+                        
+                        friend: { 
+                            select: {
+                                id: true,
+                                name: true,
+                                surname: true,
+                                profilePictureUrl: true
             }}}}}
         });
         const output = [];
@@ -176,6 +180,46 @@ user_router.get("/friends/:userid", async (req, res) => {
         res.status(200);
         res.json(output);
     }
+});
+
+
+user_router.get("/friends/list/:userid", async (req, res) => {
+
+    const user = await checkIfUserExists(req, res);
+    const page = parseInt(req.query.page) || 0;
+    const query = await prisma.friendship.findMany({
+        where: {
+            userId: user.id
+        },
+        take: 21,
+        skip: 20 * page,
+        include: {
+            friend: {
+                select: {
+                    id: true,
+                    name: true,
+                    surname: true,
+                    profilePictureUrl: true,
+                    createdAt: true
+                }
+            }
+        }
+    });
+
+    let hasMore = false;
+    // Extract only the friend object from each friendship record
+    const friends = query.map(f => f.friend);
+    if (friends.length === 21){
+        hasMore = true;
+        friends.pop();
+    }
+
+    res.status(200);
+    res.json({
+        list: friends,
+        nextPage: page + 1,
+        hasMore: hasMore
+    });
 });
 
 
