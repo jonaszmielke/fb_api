@@ -136,7 +136,7 @@ user_router.get("/posts/:userid", async (req, res) => {
             return;
         }
 
-        console.log(postids);
+        //console.log(postids);
         res.status(200);
         res.json({'postids': postids});
     }

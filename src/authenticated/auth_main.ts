@@ -76,7 +76,7 @@ auth_router.get("/fyp_posts", async (req, res) => {
         return;
     }
 
-    console.log(`Posts returned: ${posts.map( (p) => {return p.id})}\nPosts omitted: ${idsToOmit}\n`);
+    //console.log(`Posts returned: ${posts.map( (p) => {return p.id})}\nPosts omitted: ${idsToOmit}\n`);
     res.status(200);
     res.json({
         'postids': ids,

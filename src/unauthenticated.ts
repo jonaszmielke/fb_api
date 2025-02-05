@@ -29,8 +29,8 @@ function createJWT(user){
 
 unauth_router.post("/signin", async (req, res) => {
 
-    console.log("req.body.email " + req.body.email);
-    console.log("req.body.password " + req.body.password);
+    //console.log("req.body.email " + req.body.email);
+    //console.log("req.body.password " + req.body.password);
 
     if(!req.body.email || !req.body.password){
         res.status(400);
@@ -43,15 +43,15 @@ unauth_router.post("/signin", async (req, res) => {
         user = await prisma.user.findUnique({
             where: { email: req.body.email }
         });
-        console.log("User found:", user);
+        //console.log("User found:", user);
         //If this happens, user provided non registered email
         //Then the user is undefined and code below sends wrong credential error
     } catch (error) {
         console.error("Error fetching user:", error);
     }
-    console.log("User fetched from database:", user);
-    console.log("user.password " + user.password);
-    console.log("hashPassword(req.body.password) " + hashPassword(req.body.password));
+    //console.log("User fetched from database:", user);
+    //console.log("user.password " + user.password);
+    //console.log("hashPassword(req.body.password) " + hashPassword(req.body.password));
     if(user.password == hashPassword(req.body.password)){
         
         req.user = user;
