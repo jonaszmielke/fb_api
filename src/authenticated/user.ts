@@ -67,6 +67,67 @@ user_router.get("/:userid", async (req, res) =>{
 });
 
 
+
+user_router.get("/data/:userid", async (req, res) => {
+
+    const user = await checkIfUserExists(req, res);
+
+    if (user) {
+
+        const friends_ammount = await prisma.friendship.count({
+            where: {userId: user.id}
+        });
+    
+        const mutual_friends_ammount = await prisma.friendship.count({
+            where: {
+                OR: [
+                    {userId: req.user.id, friendId: user.id,},
+                    {userId: user.id, friendId: req.user.id,},
+                ],
+            },
+        });
+    
+        const friends_query = await prisma.friendship.findMany({
+            where: {
+                userId: user.id
+            },
+            take: 20,
+            orderBy: {createdAt: 'desc'},
+            include: {
+                friend: {
+                    select: {
+                        id: true,
+                        name: true,
+                        surname: true,
+                        profilePictureUrl: true,
+                        createdAt: true
+            }}}
+        });
+        const friends = friends_query.map(f => f.friend);
+        
+
+
+        res.status(200);
+        res.json({
+            id: user.id,
+            name: user.name,
+            surname: user.surname,
+            profile_picture_url: user.profilePictureUrl,
+            friends_ammount: friends_ammount,
+            mutual_friends_ammount: mutual_friends_ammount,
+            friends: friends
+        });
+
+    }
+});
+
+
+
+
+
+
+
+
 user_router.get("/posts/:userid", async (req, res) => {
 
     const user = await checkIfUserExists(req, res);
@@ -141,6 +202,41 @@ user_router.get("/posts/:userid", async (req, res) => {
         res.json({'postids': postids});
     }
 });
+
+
+user_router.get("/posts/list/:userid", async (req, res) =>{
+
+    const user = await checkIfUserExists(req, res);
+    const page = parseInt(req.query.page) || 0;
+    const query = await prisma.post.findMany({
+        where: {ownerId: user.id},
+        orderBy: {createdAt: 'desc'},
+        take: 5,
+        skip: page * 5,
+        select: {id: true}
+    });
+
+    const posts:number[] = [];
+    query.forEach((post) => {
+        posts.push(post.id);
+    });
+
+    let hasMore = false;
+    if (posts.length === 21){
+        hasMore = true;
+        posts.pop();
+    }
+
+    res.status(200);
+    res.json({
+        list: posts,
+        nextPage: page + 1,
+        hasMore: hasMore
+    });
+
+});
+
+
 
 
 user_router.get("/friends/:userid", async (req, res) => {
