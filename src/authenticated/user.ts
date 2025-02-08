@@ -211,7 +211,7 @@ user_router.get("/posts/list/:userid", async (req, res) =>{
     const query = await prisma.post.findMany({
         where: {ownerId: user.id},
         orderBy: {createdAt: 'desc'},
-        take: 5,
+        take: 6,
         skip: page * 5,
         select: {id: true}
     });
@@ -222,7 +222,7 @@ user_router.get("/posts/list/:userid", async (req, res) =>{
     });
 
     let hasMore = false;
-    if (posts.length === 21){
+    if (posts.length === 6){
         hasMore = true;
         posts.pop();
     }
