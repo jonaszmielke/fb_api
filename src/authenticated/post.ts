@@ -39,8 +39,23 @@ post_router.get("/:postid", async (req, res) => {
         return;
     }
 
+    const likeCount = await prisma.like.count({
+        where: { postId: postid }
+    });
+
+    const isLikedByUser = await prisma.like.findUnique({
+        where: { postId_ownerId: {
+                postId: postid,
+                ownerId: req.user.id,
+            }}
+    });
+
     res.status(200);
-    res.json(post);
+    res.json({
+        ...post,
+        likeCount: likeCount,
+        isLikedByUser: !!isLikedByUser
+    });
 });
 
 post_router.post("/", upload.single('image'), async (req, res) => {
