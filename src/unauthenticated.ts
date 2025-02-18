@@ -29,6 +29,7 @@ function createJWT(user){
 
 unauth_router.post("/signin", async (req, res) => {
 
+    //console.log("Got the signin request");
     //console.log("req.body.email " + req.body.email);
     //console.log("req.body.password " + req.body.password);
 
@@ -49,9 +50,9 @@ unauth_router.post("/signin", async (req, res) => {
     } catch (error) {
         console.error("Error fetching user:", error);
     }
-    //console.log("User fetched from database:", user);
-    //console.log("user.password " + user.password);
-    //console.log("hashPassword(req.body.password) " + hashPassword(req.body.password));
+    console.log("User fetched from database:", user);
+    console.log("user.password " + user.password);
+    console.log("hashPassword(req.body.password) " + hashPassword(req.body.password));
     if(user.password == hashPassword(req.body.password)){
         
         req.user = user;

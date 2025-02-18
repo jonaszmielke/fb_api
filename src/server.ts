@@ -8,6 +8,11 @@ import {authenticate} from './middleware';
 import cors from 'cors';
 const app = express();
 
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
 
 const unauth_cors = ((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
@@ -28,7 +33,7 @@ app.use('/app_images', express.static('app_images'));
 
 //router for unauthenticated user requests
 //like log in and account creation
-app.use("/unauth",unauth_cors, unauth_router)
+app.use("/unauth", unauth_cors, unauth_router)
 
 //router for authenticated user requests
 app.use("/api", [auth_cors, authenticate], auth_router);

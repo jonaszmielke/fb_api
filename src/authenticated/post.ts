@@ -50,11 +50,16 @@ post_router.get("/:postid", async (req, res) => {
             }}
     });
 
+    const commentCount = await prisma.comment.count({
+        where: { postId: postid }
+    });
+
     res.status(200);
     res.json({
         ...post,
         likeCount: likeCount,
-        isLikedByUser: !!isLikedByUser
+        isLikedByUser: !!isLikedByUser,
+        commentCount: commentCount
     });
 });
 

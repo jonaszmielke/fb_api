@@ -1,4 +1,3 @@
-import test from "node:test";
 import prisma from "../db";
 import {Router} from 'express';
 const comment_router = Router();
@@ -6,14 +5,13 @@ const comment_router = Router();
 
 export async function findPost(req, res) {
 
-    let postid = req.params.postid.substring(1);
-    if(isNaN(postid) || postid === undefined){
-
-        res.status(400)
-        res.json({ error: 'Invalid postid parameter'});
+    const postid = parseInt(req.params.postid);
+    if(!postid){
+        res.status(400);
+        res.json({error: "Bad request, please provide desired post's id"});
         return;
     }
-    postid = parseInt(postid);
+
     const post = await prisma.post.findUnique({
         where: {id: postid}
     });
@@ -26,6 +24,44 @@ export async function findPost(req, res) {
     return post;
 }
 
+comment_router.get("/:postid", async (req, res) => {
+
+    const post = await findPost(req, res);
+    const page = parseInt(req.query.page) || 0;
+    if(post){
+        
+        const comments = await prisma.comment.findMany({
+            where: {postId: post.id},
+            skip: page * 10,
+            take: 11,
+            select: {
+                id: true,
+                text: true,
+                createdAt: true,
+                owner: { select: {
+                    id: true,
+                    name: true,
+                    surname: true,
+                    profilePictureUrl: true
+                }}
+            },
+            orderBy: {createdAt: 'desc'}
+        });
+
+        let hasMore = false;
+        if (comments.length === 11){
+            hasMore = true;
+            comments.pop();
+        }
+
+        res.status(200);
+        res.json({
+            list: comments,
+            nextPage: page + 1,
+            hasMore: hasMore
+        });
+    }
+});
 
 comment_router.post("/:postid", async (req, res) => {
 
@@ -56,14 +92,12 @@ comment_router.post("/:postid", async (req, res) => {
 
 comment_router.delete("/:commentid", async (req, res) => {
 
-    let commentid = req.params.commentid.substring(1);
-    if(isNaN(commentid) || commentid === undefined){
-
+    const commentid = parseInt(req.params.commentid);
+    if(!commentid){
         res.status(400)
         res.json({ error: 'Invalid commentid parameter'});
         return;
     }
-    commentid = parseInt(commentid);
 
     const comment = await prisma.comment.findUnique({
         where: {id: commentid}
