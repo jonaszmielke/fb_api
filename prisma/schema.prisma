@@ -27,6 +27,8 @@ model User {
   likes    Like[]
   friends  Friendship[] @relation(name: "friends_users")
   friendOf Friendship[] @relation(name: "friend_of_users")
+  sentRequests     FriendRequest[] @relation(name: "sent_requests")
+  receivedRequests FriendRequest[] @relation(name: "received_requests")
 }
 
 model Post {
@@ -71,4 +73,16 @@ model Friendship {
   createdAt DateTime @default(now())
 
   @@unique([userId, friendId])
+}
+
+model FriendRequest {
+  id          Int      @id @default(autoincrement())
+  senderId    Int
+  sender      User     @relation(name: "sent_requests", fields: [senderId], references: [id])
+  receiverId  Int
+  receiver    User     @relation(name: "received_requests", fields: [receiverId], references: [id])
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  @@unique([senderId, receiverId])
 }
