@@ -2,6 +2,28 @@ import prisma from "../db";
 import {Router} from 'express';
 const friends_router = Router();
 
+friends_router.get("/", async (req, res) => {
+
+    const friend_requests = await prisma.friendRequest.findMany({
+        where: {receiverId: req.user.id},
+        select: {
+            id: true,
+            createdAt: true,
+            sender: {
+                select: {
+                    id: true,
+                    name: true,
+                    surname: true,
+                    profilePictureUrl: true
+                }
+            }
+        }
+    });
+    
+    res.status(200);
+    res.json(friend_requests);
+});
+
 
 friends_router.post("/invite", async (req, res) => {
 
