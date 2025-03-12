@@ -53,6 +53,24 @@ user_router.get("/:userid", async (req, res) =>{
             });
         }
 
+        let friendship_status = "not friends";
+        
+        const is_friend = await prisma.friendship.findFirst({
+            where: {
+                userId: req.user.id,
+                friendId: user.id
+            }
+        });
+        const friend_request_sent = await prisma.friendRequest.findFirst({
+            where: {
+                senderId: req.user.id,
+                receiverId: user.id
+            }
+        });
+
+        if (is_friend) friendship_status = "friends";
+        if (friend_request_sent) friendship_status = "invited";
+
         res.status(200);
         res.json({
             "id": user.id,
@@ -60,6 +78,7 @@ user_router.get("/:userid", async (req, res) =>{
             "surname": user.surname,
             "profile_picture": user.profilePictureUrl,
             "joined": user.createdAt,
+            "friendship_status": friendship_status,
             ...(includeMutualFriends && { mutual_friends: mutualFriendsCount }), // Include only if requested
         });
     }
@@ -120,6 +139,7 @@ user_router.get("/data/:userid", async (req, res) => {
 
     }
 });
+
 
 
 
