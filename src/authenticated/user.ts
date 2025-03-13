@@ -30,46 +30,7 @@ async function checkIfUserExists(req, res) {
 user_router.get("/:userid", async (req, res) =>{
 
     const user = await checkIfUserExists(req, res);
-    const includeMutualFriends = req.query.includeMutualFriends === 'true';
     if (user) {
-        
-        let mutualFriendsCount = null;
-
-        if (includeMutualFriends){
-            // Query for mutual friends count
-            mutualFriendsCount = await prisma.friendship.count({
-                where: {
-                    OR: [
-                        {
-                            userId: req.user.id,
-                            friendId: user.id,
-                        },
-                        {
-                            userId: user.id,
-                            friendId: req.user.id,
-                        },
-                    ],
-                },
-            });
-        }
-
-        let friendship_status = "not friends";
-        
-        const is_friend = await prisma.friendship.findFirst({
-            where: {
-                userId: req.user.id,
-                friendId: user.id
-            }
-        });
-        const friend_request_sent = await prisma.friendRequest.findFirst({
-            where: {
-                senderId: req.user.id,
-                receiverId: user.id
-            }
-        });
-
-        if (is_friend) friendship_status = "friends";
-        if (friend_request_sent) friendship_status = "invited";
 
         res.status(200);
         res.json({
@@ -78,11 +39,12 @@ user_router.get("/:userid", async (req, res) =>{
             "surname": user.surname,
             "profile_picture": user.profilePictureUrl,
             "joined": user.createdAt,
-            "friendship_status": friendship_status,
-            ...(includeMutualFriends && { mutual_friends: mutualFriendsCount }), // Include only if requested
         });
+    } else {
+
+        res.status(404);
+        res.json({message: 'User not found'});
     }
-    
 });
 
 
@@ -125,12 +87,30 @@ user_router.get("/data/:userid", async (req, res) => {
         const friends = friends_query.map(f => f.friend);
         
 
+        let friendship_status = "not friends";
+        const is_friend = await prisma.friendship.findFirst({
+            where: {
+                userId: req.user.id,
+                friendId: user.id
+            }
+        });
+        const friend_request_sent = await prisma.friendRequest.findFirst({
+            where: {
+                senderId: req.user.id,
+                receiverId: user.id
+            }
+        });
 
+        if (is_friend) friendship_status = "friends";
+        if (friend_request_sent) friendship_status = "invited";
+
+        
         res.status(200);
         res.json({
             id: user.id,
             name: user.name,
             surname: user.surname,
+            friendship_status: friendship_status,
             profile_picture_url: user.profilePictureUrl,
             friends_ammount: friends_ammount,
             mutual_friends_ammount: mutual_friends_ammount,
