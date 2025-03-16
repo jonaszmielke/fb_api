@@ -87,6 +87,7 @@ user_router.get("/data/:userid", async (req, res) => {
         const friends = friends_query.map(f => f.friend);
         
 
+        //friendship status
         let friendship_status = "not_friends";
         let requestid = null;
         const is_friend = await prisma.friendship.findFirst({
@@ -106,7 +107,10 @@ user_router.get("/data/:userid", async (req, res) => {
                 }
             });
 
-            if (invited_them) friendship_status = "invited_them";
+            if (invited_them) {
+                friendship_status = "invited_them";
+                requestid = invited_them.id;
+            }    
             else{
 
                 const they_invited = await prisma.friendRequest.findFirst({
@@ -115,12 +119,11 @@ user_router.get("/data/:userid", async (req, res) => {
                         receiverId: req.user.id
                     }
                 });
+
                 if (they_invited) {
-                
                     friendship_status = "they_invited";
                     requestid = they_invited.id;
                 }
-
             }
         }
 
