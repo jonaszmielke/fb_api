@@ -87,7 +87,8 @@ user_router.get("/data/:userid", async (req, res) => {
         const friends = friends_query.map(f => f.friend);
         
 
-        let friendship_status = "not friends";
+        let friendship_status = "not_friends";
+        let requestid = null;
         const is_friend = await prisma.friendship.findFirst({
             where: {
                 userId: req.user.id,
@@ -104,15 +105,21 @@ user_router.get("/data/:userid", async (req, res) => {
                     receiverId: user.id
                 }
             });
-            if (invited_them) friendship_status = "invited";
+
+            if (invited_them) friendship_status = "invited_them";
             else{
+
                 const they_invited = await prisma.friendRequest.findFirst({
                     where: {
                         senderId: user.id,
                         receiverId: req.user.id
                     }
                 });
-                if (they_invited) friendship_status = "invited_by";
+                if (they_invited) {
+                
+                    friendship_status = "they_invited";
+                    requestid = they_invited.id;
+                }
 
             }
         }
@@ -124,6 +131,7 @@ user_router.get("/data/:userid", async (req, res) => {
             name: user.name,
             surname: user.surname,
             friendship_status: friendship_status,
+            friend_request_id: requestid,
             profile_picture_url: user.profilePictureUrl,
             friends_ammount: friends_ammount,
             mutual_friends_ammount: mutual_friends_ammount,
