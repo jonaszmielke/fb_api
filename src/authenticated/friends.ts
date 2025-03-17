@@ -188,4 +188,59 @@ friends_router.post("/cancel", async (req, res) => {
         res.status(200).json({message: 'Friend request cancelled'});
 });
 
+
+
+friends_router.delete("/unfriend", async (req, res) => {
+
+    const friend_id = parseInt(req.query.friend_id);
+    const friendship_id = parseInt(req.query.friendship_id);
+
+    if (!friend_id && !friendship_id){
+        res.status(400).json({error: `Wrong friend_id ${friend_id} or friendship_id ${friendship_id}`});
+        return;
+    }
+
+    if (friend_id){
+        const friendship = await prisma.friendship.findFirst({
+            where: {
+                userId: req.user.id,
+                friendId: friend_id
+            }
+        });
+
+        if (!friendship){
+            res.status(404).json({error: `Friendship with user ${friend_id} does not exist`});
+            return;
+        }
+
+        await prisma.friendship.deleteMany({
+            where: {
+                OR: [
+                    {userId: req.user.id, friendId: friend_id},
+                    {userId: friend_id, friendId: req.user.id}
+                ]
+            }
+        });
+
+        res.status(200).json({message: 'Friendship deleted'});
+
+    } else { //by friendship_id
+
+        const frienship = await prisma.friendship.findUnique({
+            where: {id: friendship_id}
+        });
+
+        if (!frienship){
+            res.status(404).json({error: `Friendship ${friendship_id} does not exist`});
+            return;
+        }
+
+        await prisma.friendship.delete({
+            where: {id: friendship_id}
+        });
+
+        res.status(200).json({message: 'Friendship deleted'});
+    }
+});
+
 export default friends_router;
