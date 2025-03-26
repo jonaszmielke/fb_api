@@ -200,7 +200,7 @@ friends_router.delete("/unfriend", async (req, res) => {
         return;
     }
 
-    if (friend_id){
+    if (friend_id){ //by friendid
         const friendship = await prisma.friendship.findFirst({
             where: {
                 userId: req.user.id,
