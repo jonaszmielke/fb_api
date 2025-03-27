@@ -45,7 +45,10 @@ comment_router.get("/:postid", async (req, res) => {
                     profilePictureUrl: true
                 }}
             },
-            orderBy: {createdAt: 'desc'}
+            orderBy: [
+                { createdAt: 'desc' },
+                { id: 'desc' }
+            ]
         });
 
         let hasMore = false;
