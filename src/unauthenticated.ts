@@ -3,9 +3,10 @@ import app from "./server";
 import crypto from "crypto";
 import jwt from 'jsonwebtoken';
 import {Router} from 'express';
+import { error } from "console";
 const unauth_router = Router();
 
-function hashPassword(password){
+function hashPassword(password:string){
     const result = crypto.createHash("sha3-256")
         .update(password)
         .digest("hex")
@@ -29,48 +30,44 @@ function createJWT(user){
 
 unauth_router.post("/signin", async (req, res) => {
 
-    //console.log("Got the signin request");
-    //console.log("req.body.email " + req.body.email);
-    //console.log("req.body.password " + req.body.password);
-
     if(!req.body.email || !req.body.password){
-        res.status(400);
-        res.json({"error": "nope"});
+        res.status(400).json({"error": "email and password are needed"});
         return;
     }
 
-    let user;
     try {
-        user = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { email: req.body.email }
         });
-        //console.log("User found:", user);
-        //If this happens, user provided non registered email
-        //Then the user is undefined and code below sends wrong credential error
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-    console.log("User fetched from database:", user);
-    console.log("user.password " + user.password);
-    console.log("hashPassword(req.body.password) " + hashPassword(req.body.password));
-    if(user.password == hashPassword(req.body.password)){
         
-        req.user = user;
-        const token = createJWT(user); 
-
-        res.status(200);
-        res.json({
+        if(user.password === hashPassword(req.body.password)){
         
-            message: `Welcome ${user.name}, successfully signed in!`,
-            token: token
-        });
+            req.user = user;
+            const token = createJWT(user); 
     
-    } else {
+            res.status(200);
+            res.json({
+            
+                message: `Welcome ${user.name}, successfully signed in!`,
+                token: token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    surname: user.surname,
+                    profilePictureUrl: user.profilePictureUrl,
+                    createdAt: user.createdAt
+                }
 
-        res.status(401);
-        res.json({"error": "Wrong credentials"});
+            });
+        
+        } else res.status(401).json({error: true, message: "Wrong credentials"});
+
+    } catch (error) {
+        //console.error("Error fetching user:", error);
+        res.json({error: true, message: "Wrong credentials"});
     }
 });
+
 
 unauth_router.post("/signup", async (req, res) =>{
 
