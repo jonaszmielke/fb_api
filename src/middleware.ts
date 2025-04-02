@@ -24,7 +24,7 @@ export const authenticate = (req, res, next) => {
 
     } catch (error) {
 
-        console.log(`Unauthorized jwt auth attempt from ${req.ip}`);
+        console.log(`Unauthorized jwt auth attempt from ${req.ip}\n${token}`);
         res.status(401);
         res.send("Invalid token");
         return;

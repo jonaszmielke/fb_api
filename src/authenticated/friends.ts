@@ -4,7 +4,8 @@ const friends_router = Router();
 
 friends_router.get("/", async (req, res) => {
 
-    const page = parseInt(req.query.page) || 0;
+    const pageStr = typeof req.query.page === 'string' ? req.query.page : '0';
+    const page = parseInt(pageStr, 10) || 0;
     const friend_requests = await prisma.friendRequest.findMany({
         where: {receiverId: req.user.id},
         skip: page * 20,
@@ -61,7 +62,10 @@ friends_router.get("/", async (req, res) => {
 friends_router.post("/invite", async (req, res) => {
 
     const sender = req.user;
-    const receiverid = parseInt(req.query.receiverid);
+
+    const receiverIdParam = req.query.receiverid;
+    const receiveridStr = typeof receiverIdParam === 'string' ? receiverIdParam : "";
+    const receiverid = parseInt(receiveridStr, 10);
 
     if (!receiverid){
         res.status(400).json({error: `Wrong receiverid ${receiverid}`});
@@ -91,7 +95,9 @@ friends_router.post("/invite", async (req, res) => {
 
 friends_router.post("/accept", async (req, res) => {
 
-    const friendrequestid = parseInt(req.query.friendrequestid);
+    const friendrequestidParam = req.query.friendrequestid;
+    const friendrequestidStr = typeof friendrequestidParam === 'string' ? friendrequestidParam : "";
+    const friendrequestid = parseInt(friendrequestidStr, 10);
 
     if (!friendrequestid){
         res.status(400).json({error: `Wrong receiverid ${friendrequestid}`});
@@ -133,7 +139,9 @@ friends_router.post("/accept", async (req, res) => {
 
 friends_router.post("/reject", async (req, res) => {
 
-    const friendrequestid = parseInt(req.query.friendrequestid);
+    const friendrequestidParam = req.query.friendrequestid;
+    const friendrequestidStr = typeof friendrequestidParam === 'string' ? friendrequestidParam : "";
+    const friendrequestid = parseInt(friendrequestidStr, 10);
 
     if (!friendrequestid){
         res.status(400).json({error: `Wrong receiverid ${friendrequestid}`});
@@ -162,38 +170,45 @@ friends_router.post("/reject", async (req, res) => {
 
 friends_router.post("/cancel", async (req, res) => {
     
-        const friendrequestid = parseInt(req.query.friendrequestid);
+    const friendrequestidParam = req.query.friendrequestid;
+    const friendrequestidStr = typeof friendrequestidParam === 'string' ? friendrequestidParam : "";
+    const friendrequestid = parseInt(friendrequestidStr, 10);
     
-        if (!friendrequestid){
-            res.status(400).json({error: `Wrong receiverid ${friendrequestid}`});
-            return;
+    if (!friendrequestid){
+        res.status(400).json({error: `Wrong receiverid ${friendrequestid}`});
+        return;
+    }
+
+    const friendrequest = await prisma.friendRequest.findUnique({
+        where: {
+            id: friendrequestid,
+            status: 'pending'
         }
-    
-        const friendrequest = await prisma.friendRequest.findUnique({
-            where: {
-                id: friendrequestid,
-                status: 'pending'
-            }
-        });
-    
-        if (!friendrequest){
-            res.status(404).json({error: `Friend request ${friendrequestid} does not exist`});
-            return;
-        }
-    
-        await prisma.friendRequest.delete({
-            where: {id: friendrequestid}
-        });
-    
-        res.status(200).json({message: 'Friend request cancelled'});
+    });
+
+    if (!friendrequest){
+        res.status(404).json({error: `Friend request ${friendrequestid} does not exist`});
+        return;
+    }
+
+    await prisma.friendRequest.delete({
+        where: {id: friendrequestid}
+    });
+
+    res.status(200).json({message: 'Friend request cancelled'});
 });
 
 
 
 friends_router.delete("/unfriend", async (req, res) => {
 
-    const friend_id = parseInt(req.query.friend_id);
-    const friendship_id = parseInt(req.query.friendship_id);
+    const friendIdParam = req.query.friend_id;
+    const friendIdStr = typeof friendIdParam === 'string' ? friendIdParam : '';
+    const friend_id = parseInt(friendIdStr, 10);
+
+    const friendshipIdParam = req.query.friendship_id;
+    const friendshipIdStr = typeof friendshipIdParam === 'string' ? friendshipIdParam : '';
+    const friendship_id = parseInt(friendshipIdStr, 10);
 
     if (!friend_id && !friendship_id){
         res.status(400).json({error: `Wrong friend_id ${friend_id} or friendship_id ${friendship_id}`});

@@ -55,6 +55,7 @@ unauth_router.post("/signin", async (req, res) => {
                     name: user.name,
                     surname: user.surname,
                     profilePictureUrl: user.profilePictureUrl,
+                    backgroundUrl: user.backgroundUrl,
                     createdAt: user.createdAt
                 }
 

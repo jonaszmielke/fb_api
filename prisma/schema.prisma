@@ -19,7 +19,7 @@ model User {
   surname           String
   email             String   @unique
   profilePictureUrl String?
-  backgroungUrl     String?
+  backgroundUrl     String?
   password          String
   createdAt         DateTime @default(now())
 

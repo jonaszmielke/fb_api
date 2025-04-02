@@ -16,10 +16,22 @@ auth_router.use("/friends", friends_router);
 
 
 auth_router.get("/fyp_posts", async (req, res) => {
+    
+    const omitParam = req.query.omit;
+    const omitStr = typeof omitParam === 'string' ? omitParam : '[]';
 
-    const idsToOmit = JSON.parse(req.query.omit || '[]');
+    let idsToOmit: number[];
+    try {
+        // We assert that the parsed value is an array of numbers.
+        idsToOmit = JSON.parse(omitStr) as number[];
+    } catch (error) {
+        res.status(400).json({ error: `Invalid omit parameter: ${omitParam}` });
+        return;
+    }
+
     let error:string;
     let posts;
+    
 
     if(!idsToOmit || idsToOmit.length === 0){
         try{

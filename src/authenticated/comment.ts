@@ -27,7 +27,8 @@ export async function findPost(req, res) {
 comment_router.get("/:postid", async (req, res) => {
 
     const post = await findPost(req, res);
-    const page = parseInt(req.query.page) || 0;
+    const pageStr = typeof req.query.page === 'string' ? req.query.page : '0';
+    const page = parseInt(pageStr, 10) || 0;
     if(post){
         
         const comments = await prisma.comment.findMany({

@@ -1,5 +1,6 @@
 node_modules
 app_images
+src/temp
 # Keep environment variables out of version control
 .env
 

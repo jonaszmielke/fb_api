@@ -1,8 +1,12 @@
 import prisma from "../db";
 import {Router} from 'express';
-import CreateUpload from "../storage";
+import multer from 'multer';
+
+import { saveImage } from "../imageService";
+
+
 const user_router = Router();
-const upload = CreateUpload("profile_pictures");
+const upload = multer({ dest: '../temp/' });
 
 async function checkIfUserExists(req, res) {
 
@@ -158,7 +162,10 @@ user_router.get("/posts/:userid", async (req, res) => {
     const requestedUserId = parseInt(req.params.userid);
 
     if (user){
-        const idsToOmit = JSON.parse(req.query.omit || '[]');
+
+        const omitQuery = typeof req.query.omit === 'string' ? req.query.omit : '[]';
+        const idsToOmit = JSON.parse(omitQuery);
+
         let error:string;
         let result;
     
@@ -231,7 +238,8 @@ user_router.get("/posts/:userid", async (req, res) => {
 user_router.get("/posts/list/:userid", async (req, res) =>{
 
     const user = await checkIfUserExists(req, res);
-    const page = parseInt(req.query.page) || 0;
+    const pageStr = typeof req.query.page === 'string' ? req.query.page : '0';
+    const page = parseInt(pageStr, 10) || 0;
     const query = await prisma.post.findMany({
         where: {ownerId: user.id},
         orderBy: {createdAt: 'desc'},
@@ -306,7 +314,8 @@ user_router.get("/friends/:userid", async (req, res) => {
 user_router.get("/friends/list/:userid", async (req, res) => {
 
     const user = await checkIfUserExists(req, res);
-    const page = parseInt(req.query.page) || 0;
+    const pageStr = typeof req.query.page === 'string' ? req.query.page : '0';
+    const page = parseInt(pageStr, 10) || 0;
     const query = await prisma.friendship.findMany({
         where: {
             userId: user.id
@@ -343,21 +352,46 @@ user_router.get("/friends/list/:userid", async (req, res) => {
 });
 
 
-user_router.post("/profile_picture", upload.single('image'), async (req, res) =>{
 
-    if(!req.file){
-        res.status(400);
-        res.send("Incorrect image");
+user_router.post("/profile_picture", upload.single('image'), async (req, res) => {
+    if (!req.file) {
+        res.status(400).send("Incorrect image");
         return;
     }
 
-    const user = await prisma.user.update({
-        where: {id: req.user.id},
-        data: {profilePictureUrl: req.file.filename}
-    });
+    try {
+        // Save the image using the reusable function and get the new unique filename.
+        const uniqueName = await saveImage(req.file, 'profile_picture');
 
-    res.status(200);
-    res.json({'message': 'Profile picture updated succesfuly'});
+        // Update the user in the database with the new profile picture filename.
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { profilePictureUrl: uniqueName }
+        });
+
+        res.status(200).json({ message: 'Profile picture updated successfully' });
+    } catch (error) {
+        console.error("Error saving image:", error);
+        res.status(500).send("Server error");
+    }
+});
+
+user_router.post("/background", upload.single('image'), async (req, res) => {
+    if (!req.file) {
+        res.status(400).send("Incorrect image");
+        return;
+    }
+    try {
+        const uniqueName = await saveImage(req.file, 'background');
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { backgroundUrl: uniqueName }
+        });
+        res.status(200).json({ message: 'Background updated successfully' });
+    } catch (error) {
+        console.error("Error saving image:", error);
+        res.status(500).send("Server error");
+    }
 });
 
 
