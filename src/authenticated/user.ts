@@ -140,6 +140,7 @@ user_router.get("/data/:userid", async (req, res) => {
             friendship_status: friendship_status,
             friend_request_id: requestid,
             profile_picture_url: user.profilePictureUrl,
+            backgroundUrl: user.backgroundUrl,
             friends_ammount: friends_ammount,
             mutual_friends_ammount: mutual_friends_ammount,
             friends: friends
