@@ -16,86 +16,36 @@ auth_router.use("/friends", friends_router);
 
 
 auth_router.get("/fyp_posts", async (req, res) => {
-    
-    const omitParam = req.query.omit;
-    const omitStr = typeof omitParam === 'string' ? omitParam : '[]';
+   
+    const pageStr = typeof req.query.page === 'string' ? req.query.page : '0';
+    const page = parseInt(pageStr, 10) || 0;
 
-    let idsToOmit: number[];
-    try {
-        // We assert that the parsed value is an array of numbers.
-        idsToOmit = JSON.parse(omitStr) as number[];
-    } catch (error) {
-        res.status(400).json({ error: `Invalid omit parameter: ${omitParam}` });
-        return;
+    const query = await prisma.post.findMany({
+        orderBy: [{createdAt: 'desc'}, {id: 'desc'}],
+        take: 6,
+        skip: page * 5,
+        select: { id: true }
+    });
+
+    const posts:number[] = [];
+    query.forEach((post) => {
+        posts.push(post.id);
+    });
+
+    let hasMore = false;
+    if (posts.length === 6){
+        hasMore = true;
+        posts.pop();
     }
 
-    let error:string;
-    let posts;
-    
-
-    if(!idsToOmit || idsToOmit.length === 0){
-        try{
-
-            posts = await prisma.post.findMany({
-    
-                orderBy: {createdAt: 'desc'},
-                take: 5,
-                select: {
-                    id: true
-                }
-            });
-
-        } catch (e){
-            error = `Error fetching 5 posts for fyp\n${e}`;
-        }
-
-    } else {
-        try{
-
-            posts = await prisma.post.findMany({
-    
-                where: {
-                    id: {
-                        notIn: idsToOmit
-                    }},
-                orderBy: {createdAt: 'desc'},
-                take: 5,
-                select: {
-                    id: true
-                }
-            });
-
-        } catch (e) {
-            error = `Error fetching 5 posts for fyp\nOmit: ${idsToOmit}\n${e}`;
-        }
-    }
-    
-
-    if(error){
-        console.log(error);
-        res.status(500);
-        res.json({message: 'Internal server error'});
-        return;
-    }
-
-    const ids:number[] = [];
-    posts.map( (post) => {
-        ids.push(post.id)
-    })
-
-    if(!ids || ids.length === 0){
-
-        res.status(200);
-        res.json({allPostsDepleted: true});
-        return;
-    }
-
-    //console.log(`Posts returned: ${posts.map( (p) => {return p.id})}\nPosts omitted: ${idsToOmit}\n`);
     res.status(200);
     res.json({
-        'postids': ids,
-        'allPostsDepleted': false
+        list: posts,
+        nextPage: page + 1,
+        hasMore: hasMore
     });
-})
+    
+
+});
 
 export default auth_router;

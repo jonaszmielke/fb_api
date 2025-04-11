@@ -91,6 +91,10 @@ comment_router.post("/:postid", async (req, res) => {
             comment: comment.text
         })
     }
+    else {
+        res.status(404);
+        res.json({error: "Post not found"});
+    }
 });
 
 
