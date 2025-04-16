@@ -72,8 +72,16 @@ unauth_router.post("/signin", async (req, res) => {
 
 unauth_router.post("/signup", async (req, res) =>{
 
-    if(req.body.name, req.body.surname, req.body.email, req.body.password){
+    if(!req.body.name || !req.body.surname || !req.body.email || !req.body.password){
 
+        res.status(400).json({
+            success: false,
+            error: 'Provided data is incorrect'
+        })
+        return
+    }
+
+    try {
         const user = await prisma.user.create({
             data:{
                 name: req.body.name,
@@ -82,14 +90,27 @@ unauth_router.post("/signup", async (req, res) =>{
                 password: hashPassword(req.body.password)
             }
         });
+        console.log(user)
+        const token = createJWT(user); 
+        res.status(200).json({
+            success: true,
+            token: token,
+            user: {
+                id: user.id,
+                name: user.name,
+                surname: user.surname,
+                profilePictureUrl: user.profilePictureUrl,
+                backgroundUrl: user.backgroundUrl,
+                createdAt: user.createdAt
+            }
+        })
 
-        res.status(200);
-        res.json({'message': "Successfully signed up"});
+    } catch(e){
 
-    } else {
-
-        res.status(400);
-        res.send("Incorrect user data")
+        res.status(401).json({
+            success: false,
+            error: 'Wrong email'
+        })
     }
 });
 
