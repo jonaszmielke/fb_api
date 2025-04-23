@@ -61,7 +61,7 @@ auth_router.get("/search", async (req, res) => {
             ]
         },
         select: { id: true },
-        take: 10
+        take: 8
     });
 
     const post_results = await prisma.post.findMany({
@@ -69,7 +69,7 @@ auth_router.get("/search", async (req, res) => {
             text: { contains: searchQuery, mode: 'insensitive' }
         },
         select: { id: true },
-        take: 10
+        take: 12
     });
 
     const user_ids = user_results.map(entry => entry.id);
