@@ -48,4 +48,39 @@ auth_router.get("/fyp_posts", async (req, res) => {
 
 });
 
+
+auth_router.get("/search", async (req, res) => {
+
+    const searchQuery = req.query.query as string;
+
+    const user_results = await prisma.user.findMany({
+        where: { 
+            OR: [
+                { name: { contains: searchQuery, mode: 'insensitive' } },
+                { surname: { contains: searchQuery, mode: 'insensitive' } }
+            ]
+        },
+        select: { id: true },
+        take: 10
+    });
+
+    const post_results = await prisma.post.findMany({
+        where: {
+            text: { contains: searchQuery, mode: 'insensitive' }
+        },
+        select: { id: true },
+        take: 10
+    });
+
+    const user_ids = user_results.map(entry => entry.id);
+    const post_ids = post_results.map(entry => entry.id);
+
+    res.status(200).json({
+        user_results: user_ids,
+        post_results: post_ids
+    });    
+
+});
+
+
 export default auth_router;
