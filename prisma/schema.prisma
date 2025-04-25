@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -23,13 +24,14 @@ model User {
   password          String
   createdAt         DateTime @default(now())
 
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
-  friends  Friendship[] @relation(name: "friends_users")
-  friendOf Friendship[] @relation(name: "friend_of_users")
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  friends          Friendship[]    @relation(name: "friends_users")
+  friendOf         Friendship[]    @relation(name: "friend_of_users")
   sentRequests     FriendRequest[] @relation(name: "sent_requests")
   receivedRequests FriendRequest[] @relation(name: "received_requests")
+  logs             Logs[]          @relation("UserLogs")
 }
 
 model Post {
@@ -61,7 +63,7 @@ model Comment {
   post      Post     @relation(fields: [postId], references: [id])
   ownerId   Int
   owner     User     @relation(fields: [ownerId], references: [id])
-  text      String   @db.VarChar(255)
+  text      String   @db.Text
   createdAt DateTime @default(now())
 }
 
@@ -77,13 +79,29 @@ model Friendship {
 }
 
 model FriendRequest {
-  id          Int      @id @default(autoincrement())
-  senderId    Int
-  sender      User     @relation(name: "sent_requests", fields: [senderId], references: [id])
-  receiverId  Int
-  receiver    User     @relation(name: "received_requests", fields: [receiverId], references: [id])
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  senderId   Int
+  sender     User     @relation(name: "sent_requests", fields: [senderId], references: [id])
+  receiverId Int
+  receiver   User     @relation(name: "received_requests", fields: [receiverId], references: [id])
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
 
   @@unique([senderId, receiverId])
+}
+
+enum HttpMethod {
+  POST
+  PUT
+  PATCH
+  DELETE
+}
+
+model Logs {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  user     User   @relation("UserLogs", fields: [userId], references: [id])
+  method HttpMethod
+  endpoint String @db.Text
+  payload  Json
 }

@@ -4,7 +4,7 @@ require('dotenv').config({path: '.env'});
 import express from 'express';
 import unauth_router from './unauthenticated';
 import auth_router from './authenticated/auth_main';
-import {authenticate} from './middleware';
+import {authenticate, log} from './middleware';
 import cors from 'cors';
 const app = express();
 
@@ -36,7 +36,7 @@ app.use('/app_images', express.static('app_images'));
 app.use("/unauth", unauth_cors, unauth_router)
 
 //router for authenticated user requests
-app.use("/api", [auth_cors, authenticate], auth_router);
+app.use("/api", [auth_cors, authenticate, log], auth_router);
 
 
 app.listen(process.env.PORT, (error) =>{
