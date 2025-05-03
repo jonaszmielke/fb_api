@@ -45,27 +45,37 @@ src/
 
 ## 📦 Installation
 
----
-
 1. Clone the repo:
 
-   ```bash
-        git clone https://github.com/jonaszmielke/fb_api.git && cd fb-api
-   ```
+```bash
+    git clone https://github.com/jonaszmielke/fb_api.git && cd fb-api
+```
 
 
 2. Install dependencies:
-   ```bash
-        npm install
-    ```
+```bash
+    npm install
+```
 
 3. Create `.env` in root with:
 
-   ```dotenv
-        DATABASE_URL=postgres\://<user>:<pass>@<host>:<port>/<db>
-        JWT_SECRET=<secret>
-        PORT=3000
-   ```
+```dotenv
+    DATABASE_URL=postgres\://<user>:<pass>@<host>:<port>/<db>
+    JWT_SECRET=<secret>
+    PORT=3000
+```
+
+4. Generate types from database schema
+
+```bash
+    npx prisma generate
+```
+
+5. Sync the schema with the database
+
+```bash
+    npx prisma migrate dev
+```
 
 ---
 
@@ -74,21 +84,19 @@ src/
 ## 🚀 Running
 
 - **Dev mode** (with auto-reload):
-  ```bash
-npm run dev
-````
+```bash
+    npm run dev
+```
 
 * **Build & start**:
 
-  ```bash
-  ```
-
-npm run build
-npm start
-
+```bash
+    npm run build
+    npm start
 ```
 
 ---
+
 
 ## 📸 Image Uploads
 
