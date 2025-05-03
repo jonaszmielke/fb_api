@@ -45,6 +45,8 @@ src/
 
 ## 📦 Installation
 
+---
+
 1. Clone the repo:
 
    ```bash
@@ -60,15 +62,14 @@ src/
 3. Create `.env` in root with:
 
    ```dotenv
-        DATABASE\_URL=postgres\://<user>:<pass>@<host>:<port>/<db>
-        JWT\_SECRET=<secret>
+        DATABASE_URL=postgres\://<user>:<pass>@<host>:<port>/<db>
+        JWT_SECRET=<secret>
         PORT=3000
    ```
 
-
-````
-
 ---
+
+
 
 ## 🚀 Running
 
