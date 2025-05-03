@@ -1,6 +1,6 @@
 # Express.js Backend
 
-This is the backend for fb app built with **Express.js** and **TypeScript**. It provides user authentication, post management, comments, likes, friendships, and image uploads.
+This is the backend for [fb app](https://github.com/jonaszmielke/fb_react) built with **Express.js** and **TypeScript**. It provides user authentication, post management, comments, likes, friendships, and image uploads.
 
 ---
 
