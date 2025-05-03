@@ -2,7 +2,6 @@
 
 This is the backend for [fb app](https://github.com/jonaszmielke/fb_react) built with **Express.js** and **TypeScript**. It provides user authentication, post management, comments, likes, friendships, and image uploads.
 
----
 
 ## 🛠 Tech Stack
 
@@ -13,7 +12,6 @@ This is the backend for [fb app](https://github.com/jonaszmielke/fb_react) built
 * **Multer** for handling multipart/form-data (image uploads)
 * **CORS**, **dotenv**, and other standard middleware
 
----
 
 ## 📁 Project Structure
 
@@ -77,7 +75,6 @@ src/
     npx prisma migrate dev
 ```
 
----
 
 
 
@@ -95,7 +92,6 @@ src/
     npm start
 ```
 
----
 
 
 ## 📸 Image Uploads
@@ -164,5 +160,3 @@ src/
 | POST   | `/api/friends/reject?friendrequestid={id}`                         | Reject a friend request                      |
 | POST   | `/api/friends/cancel?friendrequestid={id}`                         | Cancel sent friend request                   |
 | DELETE | `/api/friends/unfriend?friend_id={id}` or `friendship_id={id}`     | Remove an existing friendship                |
-
----
