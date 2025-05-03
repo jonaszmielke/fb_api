@@ -35,7 +35,6 @@ src/
     └── express.d.ts          # Extends Express types - adds user type (from db schema) to Express Request
 ```
 
----
 
 ## 🔐 Authentication
 
@@ -43,31 +42,29 @@ src/
 * Clients must send header: `Authorization: Bearer <token>`.
 * Protected routes under `src/authenticated/`
 
----
 
 ## 📦 Installation
 
 1. Clone the repo:
 
    ```bash
+        git clone https://github.com/jonaszmielke/fb_api.git && cd fb-api
    ```
 
-git clone https://github.com/jonaszmielke/fb_api.git && cd fb-api
 
-````
 2. Install dependencies:
    ```bash
-npm install
-````
+        npm install
+    ```
 
 3. Create `.env` in root with:
 
    ```dotenv
+        DATABASE\_URL=postgres\://<user>:<pass>@<host>:<port>/<db>
+        JWT\_SECRET=<secret>
+        PORT=3000
    ```
 
-DATABASE\_URL=postgres\://<user>:<pass>@<host>:<port>/<db>
-JWT\_SECRET=<secret>
-PORT=3000
 
 ````
 
