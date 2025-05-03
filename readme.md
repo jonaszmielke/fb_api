@@ -99,7 +99,6 @@ npm start
 - Uses **multer** for multipart uploads.
 - Default storage is local disk; `imageService.ts` manages filenames and access paths.
 
----
 
 ## 📌 API Endpoints
 
